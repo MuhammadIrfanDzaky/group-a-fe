@@ -42,6 +42,8 @@ const ProductContent = () => {
   }, [productId]);
 
   const reviewCount = productData?.total ?? 0;
+  const productTitle = productData?.title ?? "Black Kaftan with Embellishment";
+  const productImage = productData?.image ?? "/image/image 11.png";
 
   return (
     <div
@@ -60,7 +62,7 @@ const ProductContent = () => {
         className="relative w-full h-[647px]"
       >
         <Image 
-          src="/image/image%2011.png"
+          src={productImage}
           fill
           alt="product-image"
           className="object-cover"
@@ -73,8 +75,8 @@ const ProductContent = () => {
       >
 
         {/* product title */}
-        <div>
-          <span>Black Kaftan with <br /> Embellishment</span>
+        <div className="w-2/3">
+          <span>{productTitle}</span>
         </div>
 
         {/* product rating */}
