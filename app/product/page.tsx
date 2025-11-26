@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { BiChevronLeft } from "react-icons/bi";
 import { FaStar, FaRegStar } from "react-icons/fa";
@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ReviewModal } from "../component/ReviewModals";
 
-const ProductPage = () => {
+const ProductContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productData, setProductData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -340,6 +340,20 @@ const ProductPage = () => {
 
     </div>
   )
+}
+
+const ProductPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="bg-white text-black relative min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[16px]">Loading product...</p>
+        </div>
+      </div>
+    }>
+      <ProductContent />
+    </Suspense>
+  );
 }
 
 export default ProductPage
