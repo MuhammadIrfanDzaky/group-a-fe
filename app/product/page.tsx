@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { BiChevronLeft } from "react-icons/bi";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { MdOutlineThumbUp } from "react-icons/md";
@@ -10,6 +11,37 @@ import { ReviewModal } from "../component/ReviewModals";
 
 const ProductPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productData, setProductData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  // Get product ID from URL params or use a default/placeholder
+  const productId = searchParams.get('id') || '1'; // Replace '1' with your default product ID
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`/api/products/${productId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch product');
+      }
+      
+      const data = await response.json();
+      setProductData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch product');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProduct();
+  }, [productId]);
+
+  const reviewCount = productData?.total ?? 0;
 
   return (
     <div
@@ -66,7 +98,7 @@ const ProductPage = () => {
             <span 
               className="text-[9px] text-base font-normal"
             >
-              7 Reviews
+              {`${reviewCount} Review${reviewCount !== 1 ? 's' : ''}`}
             </span>
           </div>
 
@@ -93,8 +125,8 @@ const ProductPage = () => {
         <div
           className="flex flex-row items-center justify-between"
         >
-          <span className=" text-[14px] font-bold cursor-pointer" onClick={() => setIsModalOpen(true)}>REVIEWS (7)</span>
-          <Link href="#" className="underline">View More &gt;</Link>
+          <span className=" text-[14px] font-bold cursor-pointer" onClick={() => setIsModalOpen(true)}>REVIEWS ({reviewCount})</span>
+          <Link href="#" className="underline text-green-800 text-[14px] font-bold">View More &gt;</Link>
         </div>
 
         {/* stars */}
@@ -301,7 +333,9 @@ const ProductPage = () => {
       {/* Review Modal */}
       <ReviewModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={() => setIsModalOpen(false)}
+        productId={productId}
+        onSuccess={fetchProduct}
       />
 
     </div>
