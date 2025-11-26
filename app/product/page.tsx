@@ -16,7 +16,7 @@ const ProductContent = () => {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   // Get product ID from URL params or use a default/placeholder
-  const productId = searchParams.get('id') || '1'; // Replace '1' with your default product ID
+  const productId = searchParams.get('id') || '1'; // Replace with your product ID you want to fetch
 
   const fetchProduct = async () => {
     try {
@@ -79,13 +79,13 @@ const ProductContent = () => {
 
         {/* product rating */}
         <div
-          className="flex flex-row items-center justify-start gap-[11px] bg-white text-black py-[18px]"
+          className="flex flex-row items-center justify-start gap-[11px] bg-white text-black"
         >
 
           {/* stars */}
           {reviewCount > 0 && (
             <div
-              className="flex flex-row gap-2 text-[#FBBF24]"
+              className="flex flex-row gap-2 text-[#FBBF24] py-[18px]"
             >
               <FaStar />
               <FaStar />
@@ -96,16 +96,15 @@ const ProductContent = () => {
           )}
 
           {/* review count */}
-          <div>
-            <span 
-              className="text-[9px] text-base font-normal"
-            >
-              {reviewCount === 0 
-                ? "Be the first to review" 
-                : `${reviewCount} Review${reviewCount !== 1 ? 's' : ''}`
-              }
-            </span>
-          </div>
+          {reviewCount > 0 && (
+            <div>
+              <span 
+                className="text-[9px] text-base font-normal"
+              >
+                {`${reviewCount} Review${reviewCount !== 1 ? 's' : ''}`}
+              </span>
+            </div>
+          )}
 
         </div>
 
