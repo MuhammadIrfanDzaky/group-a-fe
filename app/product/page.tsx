@@ -8,6 +8,7 @@ import { MdOutlineThumbUp } from "react-icons/md";
 import Image from "next/image";
 import Link from "next/link";
 import { ReviewModal } from "../component/ReviewModals";
+import LoadingSpinner from "../component/LoadingSpinner";
 
 const ProductContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,9 +42,23 @@ const ProductContent = () => {
     fetchProduct();
   }, [productId]);
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white text-black relative min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[16px] text-red-500">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   const reviewCount = productData?.total ?? 0;
-  const productTitle = productData?.title ?? "Black Kaftan with Embellishment";
-  const productImage = productData?.image ?? "/image/image 11.png";
+  const productTitle = productData?.title ?? "";
+  const productImage = productData?.image ?? ""; 
 
   return (
     <div
@@ -366,13 +381,7 @@ const ProductContent = () => {
 
 const ProductPage = () => {
   return (
-    <Suspense fallback={
-      <div className="bg-white text-black relative min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[16px]">Loading product...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingSpinner />}>
       <ProductContent />
     </Suspense>
   );
