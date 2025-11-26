@@ -141,7 +141,7 @@ The count updates automatically after submitting a new review.
 4. Form submits to `/api/products/${productId}`
 5. API route forwards to backend
 6. On success, success toast notification appears at the top of the screen
-7. Toast displays "Review submitted successfully!" message with check icon
+7. Toast displays "Thanks for your review!" message with check icon
 8. Modal closes after 2 seconds (allowing user to see the toast)
 9. Product data refreshes automatically
 10. Review count updates automatically
