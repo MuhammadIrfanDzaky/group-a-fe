@@ -98,7 +98,10 @@ const ProductContent = () => {
             <span 
               className="text-[9px] text-base font-normal"
             >
-              {`${reviewCount} Review${reviewCount !== 1 ? 's' : ''}`}
+              {reviewCount === 0 
+                ? "Be the first to review" 
+                : `${reviewCount} Review${reviewCount !== 1 ? 's' : ''}`
+              }
             </span>
           </div>
 
@@ -125,122 +128,137 @@ const ProductContent = () => {
         <div
           className="flex flex-row items-center justify-between"
         >
-          <span className=" text-[14px] font-bold cursor-pointer" onClick={() => setIsModalOpen(true)}>REVIEWS ({reviewCount})</span>
-          <Link href="#" className="underline text-green-800 text-[14px] font-bold">View More &gt;</Link>
+          {reviewCount === 0 ? (
+            <span className="text-[14px] font-bold cursor-pointer" onClick={() => setIsModalOpen(true)}>
+              Be the first to review
+            </span>
+          ) : (
+            <>
+              <span className="text-[14px] font-bold cursor-pointer" onClick={() => setIsModalOpen(true)}>REVIEWS ({reviewCount})</span>
+              <Link href="#" className="underline text-green-800 text-[14px] font-bold">View More &gt;</Link>
+            </>
+          )}
         </div>
 
-        {/* stars */}
-        <div>
-          <div className="flex flex- text-[12px] gap-2 text-[#FBBF24]">
-            <FaStar />
-            <FaStar />
-            <FaStar />
-            <FaStar />
-            <FaRegStar className="text-gray-400 font-bold"/>
-          </div>
-        </div>
-
-
-        {/* rating bar */}
-        <div
-          className=""
-        >
-          <div
-            className="flex flex-col gap-3.5 text-[12px] w-full"
-          >
-
-            {/* small */}
-            <div
-              className="flex flex-row items-center justify-between gap-4"
-            >
-              <div
-                className="w-3/12"
-              >
-                <span>Small</span>
-              </div>
-              <div
-                className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
-              >
-                <div
-                  className="flex w-2/100 bg-[#2B6646]"
-                >
-
-                </div>
-              </div>
-              <div
-                className="flex items-center justify-end w-1/12"
-              >
-                <span>2%</span>
+        {reviewCount > 0 && (
+          <>
+            {/* stars */}
+            <div>
+              <div className="flex flex- text-[12px] gap-2 text-[#FBBF24]">
+                <FaStar />
+                <FaStar />
+                <FaStar />
+                <FaStar />
+                <FaRegStar className="text-gray-400 font-bold"/>
               </div>
             </div>
 
-            {/* true to size */}
-            <div
-              className="flex flex-row items-center justify-between gap-4"
-            >
-              <div
-                className="w-3/12"
-              >
-                <span>True to Size</span>
-              </div>
-              <div
-                className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
-              >
-                <div
-                  className="flex w-85/100 bg-[#2B6646]"
-                >
 
-                </div>
-              </div>
-              <div
-                className="flex items-center justify-end w-1/12"
-              >
-                <span>85%</span>
-              </div>
-            </div>
-            
-            {/* large */}
+            {/* rating bar */}
             <div
-              className="flex flex-row items-center justify-between gap-4"
+              className=""
             >
               <div
-                className="w-3/12"
+                className="flex flex-col gap-3.5 text-[12px] w-full"
               >
-                <span>Large</span>
-              </div>
-              <div
-                className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
-              >
+
+                {/* small */}
                 <div
-                  className="flex w-13/100 bg-[#2B6646]"
+                  className="flex flex-row items-center justify-between gap-4"
                 >
+                  <div
+                    className="w-3/12"
+                  >
+                    <span>Small</span>
+                  </div>
+                  <div
+                    className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
+                  >
+                    <div
+                      className="flex w-2/100 bg-[#2B6646]"
+                    >
+
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center justify-end w-1/12"
+                  >
+                    <span>2%</span>
+                  </div>
+                </div>
+
+                {/* true to size */}
+                <div
+                  className="flex flex-row items-center justify-between gap-4"
+                >
+                  <div
+                    className="w-3/12"
+                  >
+                    <span>True to Size</span>
+                  </div>
+                  <div
+                    className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
+                  >
+                    <div
+                      className="flex w-85/100 bg-[#2B6646]"
+                    >
+
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center justify-end w-1/12"
+                  >
+                    <span>85%</span>
+                  </div>
+                </div>
+                
+                {/* large */}
+                <div
+                  className="flex flex-row items-center justify-between gap-4"
+                >
+                  <div
+                    className="w-3/12"
+                  >
+                    <span>Large</span>
+                  </div>
+                  <div
+                    className="flex w-8/12 bg-[#D9D9D9] h-[9px]"
+                  >
+                    <div
+                      className="flex w-13/100 bg-[#2B6646]"
+                    >
+                    </div>
+                  </div>
+                  <div
+                    className="flex items-center justify-end w-1/12"
+                  >
+                    <span>13%</span>
+                  </div>
                 </div>
               </div>
-              <div
-                className="flex items-center justify-end w-1/12"
-              >
-                <span>13%</span>
-              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* divider */}
-      <div
-        className="px-[30px]"
-      >
+      {reviewCount > 0 && (
         <div
-          className="w-full h-0.5 bg-[#9B9A9A]"
+          className="px-[30px]"
         >
+          <div
+            className="w-full h-0.5 bg-[#9B9A9A]"
+          >
 
+          </div>
         </div>
-      </div>
+      )}
 
       {/* user review section */}
-      <div
-        className="px-[30px] py-[13px]"
-      >
+      {reviewCount > 0 && (
+        <div
+          className="px-[30px] py-[13px]"
+        >
 
         {/* header */}
         <div
@@ -310,6 +328,7 @@ const ProductContent = () => {
           <span>Nov 29, 2023</span>
         </div>
       </div>
+      )}
 
       {/* product price */}
       <div
