@@ -4,6 +4,8 @@ A Next.js-based e-commerce rental platform frontend application. This project pr
 
 **Tagline:** "We Rent, We Return, We Repeat"
 
+## Live Demo https://a-we-rent-fe.vercel.app
+
 ## Features
 
 - **Product Detail Page**: View detailed product information including images, descriptions, and pricing
