@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { BiX } from "react-icons/bi";
 import { FaCheckCircle } from "react-icons/fa";
+import { reviewSchema, type ReviewInput } from "../lib/validation";
+import { z } from "zod";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
   const [reviewText, setReviewText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; text?: string }>({});
   const [showToast, setShowToast] = useState(false);
 
   // Auto-dismiss toast after 3 seconds
@@ -23,15 +26,61 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
     if (showToast) {
       const timer = setTimeout(() => {
         setShowToast(false);
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  // Validate on blur
+  const validateField = (field: 'reviewer_name' | 'review_text', value: string) => {
+    try {
+      if (field === 'reviewer_name') {
+        reviewSchema.shape.reviewer_name.parse(value);
+        setFieldErrors(prev => ({ ...prev, name: undefined }));
+      } else if (field === 'review_text') {
+        reviewSchema.shape.review_text.parse(value);
+        setFieldErrors(prev => ({ ...prev, text: undefined }));
+      }
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const errorMessage = err.issues[0]?.message || 'Invalid input';
+        if (field === 'reviewer_name') {
+          setFieldErrors(prev => ({ ...prev, name: errorMessage }));
+        } else {
+          setFieldErrors(prev => ({ ...prev, text: errorMessage }));
+        }
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setFieldErrors({});
+
+    // Client-side validation
+    const validationResult = reviewSchema.safeParse({
+      reviewer_name: reviewerName.trim(),
+      review_text: reviewText.trim(),
+    });
+
+    if (!validationResult.success) {
+      const errors: { name?: string; text?: string } = {};
+      validationResult.error.issues.forEach((err) => {
+        if (err.path[0] === 'reviewer_name') {
+          errors.name = err.message;
+        } else if (err.path[0] === 'review_text') {
+          errors.text = err.message;
+        }
+      });
+      setFieldErrors(errors);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Use validated data with proper type
+    const validatedData: ReviewInput = validationResult.data;
 
     try {
       const response = await fetch(`/api/products/${productId}`, {
@@ -39,33 +88,42 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          reviewer_name: reviewerName.trim(),
-          review_text: reviewText.trim(),
-        }),
+        body: JSON.stringify(validatedData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.errors) {
+          // Handle field-specific errors from server
+          const errors: { name?: string; text?: string } = {};
+          errorData.errors.forEach((err: { field: string; message: string }) => {
+            if (err.field === 'reviewer_name') {
+              errors.name = err.message;
+            } else if (err.field === 'review_text') {
+              errors.text = err.message;
+            }
+          });
+          setFieldErrors(errors);
+        }
         throw new Error(errorData.error || 'Failed to submit review');
       }
 
       // Reset form and show success toast
       setReviewerName("");
       setReviewText("");
+      setFieldErrors({});
       setShowToast(true);
       
       // Close modal after a short delay to show toast
       setTimeout(() => {
         onClose();
-        setShowToast(false);
-      }, 2000);
+      }, 500);
       
       // Refresh product data if callback provided
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
-        }, 500);
+        }, 1500);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit review');
@@ -74,7 +132,7 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !showToast) return null;
 
   return (
     <>
@@ -94,6 +152,7 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
         </div>
       )}
 
+      {isOpen && (
       <div className="fixed inset-0 z-20 flex items-center justify-center">
         {/* Backdrop with blur */}
         <div 
@@ -129,11 +188,22 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
               name="reviewer_name"
               type="text"
               value={reviewerName}
-              onChange={(e) => setReviewerName(e.target.value)}
-              className="w-full px-4 py-3 border border-[#9B9A9A] rounded-sm text-[12px] text-black bg-white focus:outline-none focus:border-[#2B6646]"
+              onChange={(e) => {
+                setReviewerName(e.target.value);
+                if (fieldErrors.name) {
+                  validateField('reviewer_name', e.target.value);
+                }
+              }}
+              onBlur={(e) => validateField('reviewer_name', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-sm text-[12px] text-black bg-white focus:outline-none focus:border-[#2B6646] ${
+                fieldErrors.name ? 'border-red-500' : 'border-[#9B9A9A]'
+              }`}
               placeholder="Enter your name"
-              required
+              maxLength={100}
             />
+            {fieldErrors.name && (
+              <p className="text-[11px] text-red-500 mt-1">{fieldErrors.name}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -145,14 +215,32 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
               name="review_text"
               rows={6}
               value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              className="w-full px-4 py-3 border border-[#9B9A9A] rounded-sm text-[12px] text-black bg-white focus:outline-none focus:border-[#2B6646] resize-none"
+              onChange={(e) => {
+                setReviewText(e.target.value);
+                if (fieldErrors.text) {
+                  validateField('review_text', e.target.value);
+                }
+              }}
+              onBlur={(e) => validateField('review_text', e.target.value)}
+              className={`w-full px-4 py-3 border rounded-sm text-[12px] text-black bg-white focus:outline-none focus:border-[#2B6646] resize-none ${
+                fieldErrors.text ? 'border-red-500' : 'border-[#9B9A9A]'
+              }`}
               placeholder="Share your thoughts about this product..."
-              required
+              maxLength={1000}
             />
-            {error && (
-              <p className="text-[11px] text-red-500 mt-1">{error}</p>
-            )}
+            <div className="flex justify-between items-center">
+              <div>
+                {fieldErrors.text && (
+                  <p className="text-[11px] text-red-500 mt-1">{fieldErrors.text}</p>
+                )}
+                {error && !fieldErrors.text && (
+                  <p className="text-[11px] text-red-500 mt-1">{error}</p>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-500">
+                {reviewText.length}/1000
+              </p>
+            </div>
           </div>
 
           {/* Submit Button */}
@@ -166,7 +254,7 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !!fieldErrors.name || !!fieldErrors.text}
               className="px-6 py-2 text-[12px] bg-[#CDAA44] rounded-sm text-white hover:bg-[#B8993A] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Review'}
@@ -175,6 +263,7 @@ export const ReviewModal = ({ isOpen, onClose, productId, onSuccess }: ReviewMod
         </form>
       </div>
     </div>
+      )}
     </>
   );
 };

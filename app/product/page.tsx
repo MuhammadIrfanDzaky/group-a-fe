@@ -9,15 +9,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ReviewModal } from "../component/ReviewModals";
 import LoadingSpinner from "../component/LoadingSpinner";
+import { productResponseSchema, type ProductResponse } from "../lib/validation";
 
 const ProductContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [productData, setProductData] = useState<any>(null);
+  const [productData, setProductData] = useState<ProductResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   // Get product ID from URL params or use a default/placeholder
-  const productId = searchParams.get('id') || '1'; // Replace with your product ID you want to fetch
+  const productId = searchParams.get('id') || '2'; // Replace with your product ID you want to fetch
 
   const fetchProduct = async () => {
     try {
@@ -30,7 +31,15 @@ const ProductContent = () => {
       }
       
       const data = await response.json();
-      setProductData(data);
+      
+      // Validate response data
+      const validationResult = productResponseSchema.safeParse(data);
+      if (!validationResult.success) {
+        console.error('Invalid product data structure:', validationResult.error);
+        throw new Error('Invalid product data received');
+      }
+      
+      setProductData(validationResult.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch product');
     } finally {

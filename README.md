@@ -25,6 +25,7 @@ A Next.js-based e-commerce rental platform frontend application. This project pr
 - **Language**: TypeScript 5
 - **UI Library**: React 19.2.0
 - **Styling**: Tailwind CSS 4
+- **Validation**: Zod 4.1.13
 
 ## Project Structure
 
@@ -37,6 +38,8 @@ group-a-fe/
 │   │           └── route.ts          # API route for product operations
 │   ├── component/
 │   │   └── ReviewModals.tsx          # Review submission modal component
+│   ├── lib/
+│   │   └── validation.ts             # Zod validation schemas and types
 │   ├── product/
 │   │   └── page.tsx                  # Product detail page
 │   ├── globals.css                   # Global styles
@@ -172,12 +175,71 @@ Example:
 4. Response → Update product data
 5. Refresh UI with new review count
 
+## Validation with Zod
+
+This project uses **Zod** for comprehensive input validation and type safety. All validation schemas are centralized in `app/lib/validation.ts`.
+
+### Validation Schemas
+
+#### Review Schema (`reviewSchema`)
+Validates review submission data:
+- **reviewer_name**: 
+  - Required, 1-50 characters
+  - Automatically trimmed
+  - Cannot be empty after trimming
+- **review_text**: 
+  - Required, 6-200 characters
+  - Automatically trimmed
+  - Minimum 6 characters after trimming
+
+#### Product ID Schema (`productIdSchema`)
+Validates product ID format:
+- Required string
+- Must be numeric only (regex: `/^\d+$/`)
+
+#### Product Response Schema (`productResponseSchema`)
+Validates API response structure:
+- **id**: Optional number
+- **title**: Required string
+- **image**: String (URL or plain string)
+- **total**: Number, minimum 0, defaults to 0
+
+### Type Safety
+
+Zod schemas automatically generate TypeScript types:
+- `ReviewInput`: Type for review submission data
+- `ProductResponse`: Type for product API responses
+
+These types are used throughout the codebase to ensure type safety:
+- API routes validate and type incoming requests
+- Components use typed data structures
+- Single source of truth for data validation rules
+
+### Validation Flow
+
+1. **Client-Side Validation** (ReviewModal):
+   - Real-time field validation on blur
+   - Full form validation before submission
+   - Immediate user feedback with error messages
+
+2. **Server-Side Validation** (API Route):
+   - Product ID validation
+   - Request body validation
+   - Response data validation
+   - Field-specific error messages returned to client
+
+3. **Type Safety**:
+   - All validated data is properly typed
+   - TypeScript ensures consistency across the codebase
+   - No duplicate type definitions
+
 ## Error Handling
 
 - API errors are caught and displayed to users
 - Loading states prevent multiple submissions
 - Form validation ensures required fields are filled
 - Network errors are handled gracefully
+- Validation errors show field-specific messages
 
 ## Dependencies
 
@@ -186,6 +248,7 @@ Example:
 - `react`: 19.2.0
 - `react-dom`: 19.2.0
 - `react-icons`: ^5.5.0
+- `zod`: ^4.1.13
 
 ### Development
 - `typescript`: ^5
