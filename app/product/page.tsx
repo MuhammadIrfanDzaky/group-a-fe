@@ -18,7 +18,7 @@ const ProductContent = () => {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   // Get product ID from URL params or use a default/placeholder
-  const productId = searchParams.get('id') || '2'; // Replace with your product ID you want to fetch
+  const productId = searchParams.get('id') || '1'; // Replace with your product ID you want to fetch
 
   const fetchProduct = async () => {
     try {
